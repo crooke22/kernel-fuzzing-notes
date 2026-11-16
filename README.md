@@ -48,6 +48,10 @@ running fine, but its output went where I couldn't see it.
 **Lesson:** when a VM is blank, check the `-append` string first, then the files,
 then the CPU/KVM options.
 
+**Problem:** kernel v6.6 failed to build with “cannot use keyword ‘false’ as enumeration constant”.
+**Cause:** Ubuntu’s GCC 15 defaults to C23, where `bool/true/false` are keywords. v6.6’s real-mode boot code doesn’t force `-std=gnu11`.
+**Fix:** build with `CC=gcc-13`. Lesson: pin the compiler version to the kernel version.
+
 ## Stage 2 (in progress): instrumented kernel
 - KCOV: coverage feedback, exposed at `/sys/kernel/debug/kcov`
 - KASAN: detects use-after-free and out-of-bounds accesses
