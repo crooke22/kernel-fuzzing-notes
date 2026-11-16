@@ -48,9 +48,15 @@ running fine, but its output went where I couldn't see it.
 **Lesson:** when a VM is blank, check the `-append` string first, then the files,
 then the CPU/KVM options.
 
-**Problem:** kernel v6.6 failed to build with “cannot use keyword ‘false’ as enumeration constant”.
-**Cause:** Ubuntu’s GCC 15 defaults to C23, where `bool/true/false` are keywords. v6.6’s real-mode boot code doesn’t force `-std=gnu11`.
+**Problem:** kernel v6.6 failed to build with “cannot use keyword ‘false’ 
+as enumeration constant”.
+**Cause:** Ubuntu’s GCC 15 defaults to C23, where `bool/true/false` are keywords. 
+v6.6’s real-mode boot code doesn’t force `-std=gnu11`.
 **Fix:** build with `CC=gcc-13`. Lesson: pin the compiler version to the kernel version.
+**Problem:** build failed linking `certs/extract-cert` with `undefined reference to 'ENGINE_init'`.
+**Cause:** a host build tool that embeds module-signing certificates links against OpenSSL’s deprecated ENGINE API, which this system’s OpenSSL doesn’t provide.
+**Fix:** disabled `MODULE_SIG` and `SYSTEM_TRUSTED_KEYRING`, since a fuzzing VM doesn’t need signed modules.
+**Lesson:** kernel builds often include host tools tied to your system’s libraries. Disable unneeded features rather than fighting library versions.
 
 ## Stage 2 (in progress): instrumented kernel
 - KCOV: coverage feedback, exposed at `/sys/kernel/debug/kcov`
