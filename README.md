@@ -13,7 +13,7 @@ I'm a beginner and writing this to understand each step, not just copy it.
 ## Progress
 - [x] Verified KVM works (`vmx` flag, `/dev/kvm`)
 - [x] Stage 1: booted the host kernel in QEMU with a BusyBox initramfs
-- [ ] Stage 2: build Linux v6.6 with KCOV, KASAN and DWARF debug info, boot it in QEMU
+- [x] Stage 2: build Linux v6.12 with KCOV, KASAN and DWARF debug info, boot it in QEMU
 - [ ] Stage 3: install and run Syzkaller against that kernel
 - [ ] Stage 4: read and reproduce a crash report
 
@@ -57,6 +57,14 @@ v6.6’s real-mode boot code doesn’t force `-std=gnu11`.
 **Cause:** a host build tool that embeds module-signing certificates links against OpenSSL’s deprecated ENGINE API, which this system’s OpenSSL doesn’t provide.
 **Fix:** disabled `MODULE_SIG` and `SYSTEM_TRUSTED_KEYRING`, since a fuzzing VM doesn’t need signed modules.
 **Lesson:** kernel builds often include host tools tied to your system’s libraries. Disable unneeded features rather than fighting library versions.
+
+**Problem:** v6.6 failed with “cannot use keyword ‘false’ as enumeration constant”. 
+**Cause:** GCC 15 defaults to C23, where `bool/true/false` are keywords. 
+**Fix:** build with `CC=gcc-13`.
+
+**Problem:** v6.6 failed linking `certs/extract-cert (undefined reference to 'ENGINE_init')`, and disabling module signing didn’t change it. 
+**Fix:** switched to v6.12, which built successfully. 
+**Lesson:** a config workaround that doesn’t work is still information, and so is checking whether it was applied at all.
 
 ## Stage 2 (in progress): instrumented kernel
 - KCOV: coverage feedback, exposed at `/sys/kernel/debug/kcov`
